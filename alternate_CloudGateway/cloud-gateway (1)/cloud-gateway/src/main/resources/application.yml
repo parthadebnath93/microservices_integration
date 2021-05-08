@@ -1,0 +1,44 @@
+spring:
+   application:
+      name: API-GATEWAY
+   cloud:
+      gateway:
+         routes:
+         -  id: DEPARTMENT-TEST
+            uri: lb://DEPARTMENT-TEST
+            predicates:
+            - Path=/departments/**
+            filters:
+            -  name: CircuitBreaker
+               args:
+                  name: DEPARTMENT-TEST
+                  fallbackuri: forward:/departmentServiceFallack
+         -  id: USER-TEST
+            uri: lb://USER-TEST
+            predicates:
+            - Path=/users/**
+            filters:
+            -  name: CircuitBreaker
+               args:
+                  name: USER-TEST
+                  fallbackuri: forward:/userServiceFallack
+server:
+   port: 9191
+---
+---
+instance:
+   hostname: localhost
+---
+hystrix:
+ command:
+   fallbackcmd:
+     execution:
+       isolation:
+         thread:
+           timeoutInMilliseconds: 4000
+---
+management:
+ endpoints:
+   web:
+     exposure:
+       include: hystrix.stream
